@@ -556,7 +556,7 @@ index 00000000000000..1b8e51027ca493
 +
 +&eth {
 +	pinctrl-names = "default";
-+	pinctrl-0 = <&mdio_pins &gbe_led0_pins>;
++	pinctrl-0 = <&mdio_pins>;
 +
 +	status = "okay";
 +
