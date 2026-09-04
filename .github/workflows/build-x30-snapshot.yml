@@ -197,12 +197,16 @@ jobs:
             PATCH_ID="${X30_PATCH_COMMIT:0:12}"
           fi
 
-          echo "Applying X30 FIT sysupgrade platform patch"
-          if grep -q "totolink,X30" target/linux/mediatek/filogic/base-files/lib/upgrade/platform.sh && \
-             grep -q "totolink,x30" target/linux/mediatek/filogic/base-files/lib/upgrade/platform.sh; then
-            echo "X30 FIT sysupgrade handler already exists; not applying local platform patch."
+          echo "Adding X30 FIT sysupgrade handlers"
+
+          PLATFORM_SH="target/linux/mediatek/filogic/base-files/lib/upgrade/platform.sh"
+
+          if grep -q 'totolink,x30' "${PLATFORM_SH}"; then
+            echo "X30 FIT sysupgrade handler already exists."
           else
-            git apply "../patches/0002-mediatek-filogic-add-totolink-x30-fit-upgrade.patch"
+            sed -i '/\tnetcore,n60-pro|\\/a\
+          \ttotolink,X30|\\\
+          \ttotolink,x30|\\' "${PLATFORM_SH}"
           fi
 
           echo "Verifying X30 image profile"
