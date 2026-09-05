@@ -233,6 +233,19 @@ jobs:
           else
             echo "skip_build=false" >> "$GITHUB_OUTPUT"
           fi
+          
+      - name: Debug MT7981 Ethernet DTS
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd openwrt
+
+          echo "=== X30 DTS Ethernet ==="
+          sed -n '110,165p' target/linux/mediatek/dts/mt7981b-totolink-X30.dts
+
+          echo "=== gbe_led references ==="
+          grep -R -n "gbe_led0_pins" target/linux/mediatek/dts \
+            target/linux/mediatek/files-* 2>/dev/null || true
 
       - name: Update feeds
         if: steps.prep.outputs.skip_build != 'true'
@@ -242,6 +255,7 @@ jobs:
           set -euo pipefail
           ./scripts/feeds update -a
           ./scripts/feeds install -a
+          exit 1
 
       - name: Configure build
         if: steps.prep.outputs.skip_build != 'true'
