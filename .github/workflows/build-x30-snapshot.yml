@@ -247,6 +247,8 @@ jobs:
           grep -R -n "gbe_led0_pins" target/linux/mediatek/dts \
             target/linux/mediatek/files-* 2>/dev/null || true
 
+          exit 1
+
       - name: Update feeds
         if: steps.prep.outputs.skip_build != 'true'
         working-directory: openwrt
@@ -255,7 +257,7 @@ jobs:
           set -euo pipefail
           ./scripts/feeds update -a
           ./scripts/feeds install -a
-          exit 1
+
 
       - name: Configure build
         if: steps.prep.outputs.skip_build != 'true'
