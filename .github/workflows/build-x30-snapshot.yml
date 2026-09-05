@@ -196,10 +196,17 @@ jobs:
             git am --3way "../patches/0001-mediatek-add-TOTOLINK-X30-support.patch"
             PATCH_ID="${X30_PATCH_COMMIT:0:12}"
             
-          if grep -q "gbe_led0_pins" target/linux/mediatek/dts/mt7981b-totolink-X30.dts; then
-              echo "ERROR: X30 patch still references removed gbe_led0_pins."
+            echo "Verifying X30 Ethernet pinctrl:"
+            grep -n "pinctrl-0" target/linux/mediatek/dts/mt7981b-totolink-X30.dts
+
+            if grep -q 'pinctrl-0 = <&mdio_pins &gbe_led0_pins>;' \
+              target/linux/mediatek/dts/mt7981b-totolink-X30.dts; then
+              echo "ERROR: X30 Ethernet still references gbe_led0_pins."
               exit 1
             fi
+
+            grep -q 'pinctrl-0 = <&mdio_pins>;' \
+              target/linux/mediatek/dts/mt7981b-totolink-X30.dts
           fi
 
           echo "Adding X30 FIT sysupgrade handlers"
