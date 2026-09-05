@@ -195,8 +195,8 @@ jobs:
             echo "Applying pinned X30 board-support patch: ${X30_PATCH_COMMIT}"
             git am --3way "../patches/0001-mediatek-add-TOTOLINK-X30-support.patch"
             PATCH_ID="${X30_PATCH_COMMIT:0:12}"
-                        sed -i \
-              's/pinctrl-0 = <&mdio_pins &gbe_led0_pins>;/pinctrl-0 = <&mdio_pins>;/' \
+            sed -i \
+              's|pinctrl-0 = <&mdio_pins &gbe_led0_pins>;|pinctrl-0 = <\&mdio_pins>;|' \
               target/linux/mediatek/dts/mt7981b-totolink-X30.dts
 
             echo "Verifying Snapshot Ethernet pinctrl fix"
