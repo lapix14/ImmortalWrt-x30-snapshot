@@ -443,7 +443,7 @@ index 00000000000000..1b8e51027ca493
 +
 +/ {
 +	model = "TOTOLINK X30";
-+	compatible = "totolink,X30", "mediatek,mt7981";
++	compatible = "totolink,x30", "mediatek,mt7981";
 +
 +	aliases {
 +		label-mac-device = &gmac0;
