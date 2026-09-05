@@ -195,6 +195,7 @@ jobs:
             echo "Applying pinned X30 board-support patch: ${X30_PATCH_COMMIT}"
             git am --3way "../patches/0001-mediatek-add-TOTOLINK-X30-support.patch"
             PATCH_ID="${X30_PATCH_COMMIT:0:12}"
+            
           if grep -q "gbe_led0_pins" target/linux/mediatek/dts/mt7981b-totolink-X30.dts; then
               echo "ERROR: X30 patch still references removed gbe_led0_pins."
               exit 1
