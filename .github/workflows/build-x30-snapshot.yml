@@ -192,16 +192,22 @@ jobs:
             echo "X30 image profile already exists in ${IMMORTALWRT_REF}; not applying profile patch."
             PATCH_ID="official"
           else
-            echo "Applying pinned X30 board-support patch: ${X30_PATCH_COMMIT}"
+                        echo "Applying pinned X30 board-support patch: ${X30_PATCH_COMMIT}"
             git am --3way "../patches/0001-mediatek-add-TOTOLINK-X30-support.patch"
             PATCH_ID="${X30_PATCH_COMMIT:0:12}"
-            
-            echo "Verifying X30 Ethernet pinctrl:"
-            grep -n "pinctrl-0" target/linux/mediatek/dts/mt7981b-totolink-X30.dts
 
-            if grep -q 'pinctrl-0 = <&mdio_pins &gbe_led0_pins>;' \
+            echo "Normalizing X30 Ethernet pinctrl for Snapshot"
+            sed -i \
+              's|pinctrl-0 = <&mdio_pins &gbe_led0_pins>;|pinctrl-0 = <\&mdio_pins>;|' \
+              target/linux/mediatek/dts/mt7981b-totolink-X30.dts
+
+            echo "Verifying X30 Ethernet pinctrl:"
+            grep -n "pinctrl-0" \
+              target/linux/mediatek/dts/mt7981b-totolink-X30.dts
+
+            if grep -q 'gbe_led0_pins' \
               target/linux/mediatek/dts/mt7981b-totolink-X30.dts; then
-              echo "ERROR: X30 Ethernet still references gbe_led0_pins."
+              echo "ERROR: X30 DTS still references gbe_led0_pins."
               exit 1
             fi
 
