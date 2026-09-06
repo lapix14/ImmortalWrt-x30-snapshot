@@ -203,7 +203,7 @@ jobs:
 
           PLATFORM_SH="target/linux/mediatek/filogic/base-files/lib/upgrade/platform.sh"
 
-                  UPPER_COUNT="$(grep -c 'totolink,X30' "${PLATFORM_SH}" || true)"
+          UPPER_COUNT="$(grep -c 'totolink,X30' "${PLATFORM_SH}" || true)"
           LOWER_COUNT="$(grep -c 'totolink,x30' "${PLATFORM_SH}" || true)"
 
           if [ "${UPPER_COUNT}" -eq 0 ] && [ "${LOWER_COUNT}" -eq 0 ]; then
