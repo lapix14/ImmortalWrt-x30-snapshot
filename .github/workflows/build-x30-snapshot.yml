@@ -183,7 +183,7 @@ jobs:
           else
             echo "Applying pinned X30 board-support patch: ${X30_PATCH_COMMIT}"
             git am --3way "../patches/0001-mediatek-add-TOTOLINK-X30-support.patch"
-            PATCH_ID="${X30_PATCH_COMMIT:0:12}"
+            PATCH_ID="$(sha256sum ../patches/0001-mediatek-add-TOTOLINK-X30-support.patch | cut -c1-12)"
           fi
 
           echo "Verifying X30 Ethernet pinctrl:"
