@@ -46,7 +46,6 @@ jobs:
           required_files=(
             config/x30.config
             patches/0001-mediatek-add-TOTOLINK-X30-support.patch
-            patches/0002-mediatek-filogic-add-totolink-x30-fit-upgrade.patch
           )
 
           for file in "${required_files[@]}"; do
@@ -86,15 +85,6 @@ jobs:
             exit 1
           fi
 
-          if ! grep -q 'totolink,X30' patches/0002-mediatek-filogic-add-totolink-x30-fit-upgrade.patch; then
-            echo "ERROR: Patch 0002 does not contain legacy uppercase board-name support."
-            exit 1
-          fi
-
-          if ! grep -q 'totolink,x30' patches/0002-mediatek-filogic-add-totolink-x30-fit-upgrade.patch; then
-            echo "ERROR: Patch 0002 does not contain normalized lowercase board-name support."
-            exit 1
-          fi
 
       - name: Set ImmortalWrt Snapshot
         shell: bash
@@ -180,7 +170,6 @@ jobs:
           CONFIG_HASH="$(sha256sum \
             ../config/x30.config \
             ../patches/0001-mediatek-add-TOTOLINK-X30-support.patch \
-            ../patches/0002-mediatek-filogic-add-totolink-x30-fit-upgrade.patch \
             ../.github/workflows/build-x30-snapshot.yml \
             | sha256sum | cut -c1-12)"
 
@@ -192,39 +181,50 @@ jobs:
             echo "X30 image profile already exists in ${IMMORTALWRT_REF}; not applying profile patch."
             PATCH_ID="official"
           else
-                        echo "Applying pinned X30 board-support patch: ${X30_PATCH_COMMIT}"
+            echo "Applying pinned X30 board-support patch: ${X30_PATCH_COMMIT}"
             git am --3way "../patches/0001-mediatek-add-TOTOLINK-X30-support.patch"
             PATCH_ID="${X30_PATCH_COMMIT:0:12}"
-
-            echo "Normalizing X30 Ethernet pinctrl for Snapshot"
-            sed -i \
-              's|pinctrl-0 = <&mdio_pins &gbe_led0_pins>;|pinctrl-0 = <\&mdio_pins>;|' \
-              target/linux/mediatek/dts/mt7981b-totolink-X30.dts
-
-            echo "Verifying X30 Ethernet pinctrl:"
-            grep -n "pinctrl-0" \
-              target/linux/mediatek/dts/mt7981b-totolink-X30.dts
-
-            if grep -q 'gbe_led0_pins' \
-              target/linux/mediatek/dts/mt7981b-totolink-X30.dts; then
-              echo "ERROR: X30 DTS still references gbe_led0_pins."
-              exit 1
-            fi
-
-            grep -q 'pinctrl-0 = <&mdio_pins>;' \
-              target/linux/mediatek/dts/mt7981b-totolink-X30.dts
           fi
+
+          echo "Verifying X30 Ethernet pinctrl:"
+          grep -n "pinctrl-0" \
+            target/linux/mediatek/dts/mt7981b-totolink-X30.dts
+
+          if grep -q 'gbe_led0_pins' \
+            target/linux/mediatek/dts/mt7981b-totolink-X30.dts; then
+            echo "ERROR: X30 DTS references gbe_led0_pins."
+            exit 1
+          fi
+
+          grep -q 'pinctrl-0 = <&mdio_pins>;' \
+            target/linux/mediatek/dts/mt7981b-totolink-X30.dts
 
           echo "Adding X30 FIT sysupgrade handlers"
 
           PLATFORM_SH="target/linux/mediatek/filogic/base-files/lib/upgrade/platform.sh"
 
-          if grep -q 'totolink,x30' "${PLATFORM_SH}"; then
-            echo "X30 FIT sysupgrade handler already exists."
-          else
+                  UPPER_COUNT="$(grep -c 'totolink,X30' "${PLATFORM_SH}" || true)"
+          LOWER_COUNT="$(grep -c 'totolink,x30' "${PLATFORM_SH}" || true)"
+
+          if [ "${UPPER_COUNT}" -eq 0 ] && [ "${LOWER_COUNT}" -eq 0 ]; then
             sed -i '/\tnetcore,n60-pro|\\/a\
           \ttotolink,X30|\\\
           \ttotolink,x30|\\' "${PLATFORM_SH}"
+          elif [ "${UPPER_COUNT}" -eq 2 ] && [ "${LOWER_COUNT}" -eq 2 ]; then
+            echo "X30 FIT sysupgrade handlers already exist."
+          else
+            echo "ERROR: X30 FIT handlers are incomplete or inconsistent."
+            echo "totolink,X30 count: ${UPPER_COUNT}"
+            echo "totolink,x30 count: ${LOWER_COUNT}"
+            exit 1
+          fi
+
+          UPPER_COUNT="$(grep -c 'totolink,X30' "${PLATFORM_SH}" || true)"
+          LOWER_COUNT="$(grep -c 'totolink,x30' "${PLATFORM_SH}" || true)"
+
+          if [ "${UPPER_COUNT}" -ne 2 ] || [ "${LOWER_COUNT}" -ne 2 ]; then
+            echo "ERROR: X30 FIT handlers must appear exactly twice."
+            exit 1
           fi
 
           echo "Verifying X30 image profile"
